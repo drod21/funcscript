@@ -6,6 +6,7 @@ export enum ASTNodeType {
 	MatchExpression,
 	IfExpression,
 	ArithmeticExpression,
+	ComparisonExpression,
 	Identifier,
 	NumberLiteral,
 	StringLiteral,
