@@ -48,6 +48,8 @@ export class Parser {
             return this.parseReturnStatement();
           case 'match':
             return this.parseMatchExpression();
+          case 'function':
+            return this.parseFunctionDeclaration();
         }
         break;
       case TokenType.Identifier:
@@ -83,13 +85,11 @@ export class Parser {
     if (this.currentToken().value === 'else') {
       this.nextToken();
       alternate = this.parseBlock();
-      return new ASTNode(ASTNodeType.IfStatement, null, [
-        condition,
-        consequent,
-        alternate,
-      ]);
     }
-    return new ASTNode(ASTNodeType.IfStatement, null, [condition, consequent]);
+    const arr = alternate
+      ? [condition, consequent, alternate]
+      : [condition, consequent];
+    return new ASTNode(ASTNodeType.IfStatement, null, arr);
   }
 
   private parseReturnStatement(): ASTNode {
@@ -106,17 +106,54 @@ export class Parser {
     const cases = [];
     while (this.currentToken().value !== '}') {
       const pattern = this.expectToken(TokenType.Identifier); // pattern
-      this.expectToken(TokenType.Operator, '=>'); // '=>'
-      const block = this.parseBlock();
+      this.expectToken(TokenType.Lambda, '=>'); // '=>'
+      const expression = this.parseExpression();
       cases.push(
-        new ASTNode(ASTNodeType.MatchExpression, pattern.value, [block])
+        new ASTNode(ASTNodeType.MatchExpression, pattern.value, [expression])
       );
     }
     this.expectToken(TokenType.Punctuation, '}'); // '}'
     return new ASTNode(ASTNodeType.MatchExpression, identifier.value, cases);
   }
 
+  private parseFunctionDeclaration(): ASTNode {
+    this.expectToken(TokenType.Keyword, 'function'); // 'function'
+    const identifier = this.expectToken(TokenType.Identifier);
+    this.expectToken(TokenType.Punctuation, '('); // '('
+    const parameters = this.parseParameters();
+    this.expectToken(TokenType.Punctuation, ')'); // ')'
+    const body = this.parseBlock();
+    return new ASTNode(ASTNodeType.FunctionDeclaration, identifier.value, [
+      parameters,
+      body,
+    ]);
+  }
+
+  private parseParameters(): ASTNode {
+    const parameters = [];
+    while (
+      this.currentToken().type !== TokenType.Punctuation ||
+      this.currentToken().value !== ')'
+    ) {
+      parameters.push(this.expectToken(TokenType.Identifier).value);
+      if (
+        this.currentToken().type === TokenType.Punctuation &&
+        this.currentToken().value === ','
+      ) {
+        this.nextToken(); // Skip the comma
+      }
+    }
+    return new ASTNode(
+      ASTNodeType.Parameters,
+      null,
+      parameters.map((param) => new ASTNode(ASTNodeType.Identifier, param))
+    );
+  }
+
   private parseExpression(): ASTNode {
+    if (this.currentToken().type === TokenType.Lambda) {
+      return this.parseLambdaExpression();
+    }
     return this.parseIfExpression();
   }
 
@@ -205,6 +242,11 @@ export class Parser {
       case TokenType.String:
         this.nextToken();
         return new ASTNode(ASTNodeType.StringLiteral, token.value);
+      case TokenType.Keyword:
+        if (token.value === 'match') {
+          return this.parseMatchExpression();
+        }
+        break;
       case TokenType.Punctuation:
         if (token.value === '(') {
           this.nextToken();
@@ -213,8 +255,16 @@ export class Parser {
           return expression;
         }
         break;
+      case TokenType.Lambda:
+        return this.parseLambdaExpression();
     }
     throw new Error(`Unexpected token: ${token.value}`);
+  }
+
+  private parseLambdaExpression(): ASTNode {
+    this.expectToken(TokenType.Lambda, '=>'); // '=>'
+    const body = this.parseExpression();
+    return new ASTNode(ASTNodeType.LambdaExpression, null, [body]);
   }
 
   private parseBlock(): ASTNode {
@@ -230,3 +280,14 @@ export class Parser {
     return new ASTNode(ASTNodeType.Block, null, statements);
   }
 }
+
+// Example usage
+const sourceCode = `
+let x = 2;
+let y = match x {
+1 => 10,
+2 => 20,
+_ => 0
+};
+if y > x { return y; }
+`;

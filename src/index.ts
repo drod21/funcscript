@@ -23,4 +23,5 @@ try {
   console.log('Semantic analysis passed');
 } catch (error) {
   console.error(`Semantic analysis failed: ${(error as Error).message}`);
+  console.error(error);
 }

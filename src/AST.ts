@@ -10,6 +10,9 @@ export enum ASTNodeType {
   Identifier,
   NumberLiteral,
   StringLiteral,
+  LambdaExpression,
+  Parameters,
+  FunctionDeclaration,
   Block,
   ReturnStatement,
 }

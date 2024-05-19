@@ -7,6 +7,7 @@ export enum TokenType {
   Punctuation,
   Whitespace,
   Comment,
+  Lambda,
   EOF,
 }
 
@@ -22,7 +23,15 @@ export class Lexer {
   private position: number;
   private tokens: Token[];
 
-  private keywords = new Set(['let', 'if', 'else', 'return', 'match', 'then']);
+  private keywords = new Set([
+    'let',
+    'if',
+    'else',
+    'return',
+    'match',
+    'then',
+    'function',
+  ]);
   private operators = new Set([
     '+',
     '-',
@@ -100,6 +109,12 @@ export class Lexer {
     let char = this.getNextChar();
     let nextChar = this.peekNextChar();
 
+    // Handle lambda operator
+    if (char === '=' && nextChar === '>') {
+      char += this.getNextChar(); // get the second character
+      return new Token(TokenType.Lambda, char);
+    }
+
     // Handle multi-character operators
     if (
       (char === '=' || char === '!' || char === '<' || char === '>') &&
@@ -147,7 +162,11 @@ export class Lexer {
         continue;
       }
 
-      if (this.operators.has(char) || this.punctuations.has(char)) {
+      if (
+        this.operators.has(char) ||
+        this.punctuations.has(char) ||
+        (char === '=' && this.peekNextChar() === '>')
+      ) {
         this.getNextChar(); // move the position to include the current char
         this.tokens.push(this.tokenizeOperatorOrPunctuation());
         continue;
@@ -161,3 +180,17 @@ export class Lexer {
   }
 }
 
+// Example usage
+const sourceCode = `
+let x = 2;
+let y = match x {
+1 => 10,
+2 => 20,
+_ => 0
+};
+if y > x { return y; }
+`;
+
+const lexer = new Lexer(sourceCode);
+const tokens = lexer.tokenize();
+console.log(tokens);
