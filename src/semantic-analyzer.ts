@@ -1,153 +1,152 @@
 import { ASTNode, ASTNodeType } from './AST';
-import { Lexer } from './lexer';
-import { Parser } from './parser';
 
 export class SemanticAnalyzer {
-  private scope: Map<string, string>;
+	public analyze(node: ASTNode): void {
+			console.log(`Analyzing node: ${JSON.stringify(node)}`);
+			switch (node.type) {
+					case ASTNodeType.Program:
+							this.analyzeProgram(node);
+							break;
+					case ASTNodeType.VariableDeclaration:
+							this.analyzeVariableDeclaration(node);
+							break;
+					case ASTNodeType.Assignment:
+							this.analyzeAssignment(node);
+							break;
+					case ASTNodeType.IfStatement:
+							this.analyzeIfStatement(node);
+							break;
+					case ASTNodeType.IfExpression:
+							this.analyzeIfExpression(node);
+							break;
+					case ASTNodeType.MatchExpression:
+							this.analyzeMatchExpression(node);
+							break;
+					case ASTNodeType.MatchCase:
+							this.analyzeMatchCase(node);
+							break;
+					case ASTNodeType.ComparisonExpression:
+							this.analyzeComparisonExpression(node);
+							break;
+					case ASTNodeType.ArithmeticExpression:
+							this.analyzeArithmeticExpression(node);
+							break;
+					case ASTNodeType.Identifier:
+							this.analyzeIdentifier(node);
+							break;
+					case ASTNodeType.NumberLiteral:
+							this.analyzeNumberLiteral(node);
+							break;
+					case ASTNodeType.StringLiteral:
+							this.analyzeStringLiteral(node);
+							break;
+					case ASTNodeType.Block:
+							this.analyzeBlock(node);
+							break;
+					case ASTNodeType.ReturnStatement:
+							this.analyzeReturnStatement(node);
+							break;
+					case ASTNodeType.FunctionDeclaration:
+							this.analyzeFunctionDeclaration(node);
+							break;
+					case ASTNodeType.LambdaExpression:
+							this.analyzeLambdaExpression(node);
+							break;
+					case ASTNodeType.Parameters:
+							this.analyzeParameters(node);
+							break;
+					default:
+							throw new Error(`Unknown AST node type: ${node.type}`);
+			}
+	}
 
-  constructor() {
-    this.scope = new Map();
-  }
+	private analyzeProgram(node: ASTNode): void {
+			for (const child of node.children) {
+					this.analyze(child);
+			}
+	}
 
-  public analyze(node: ASTNode): void {
-    this.visit(node);
-  }
+	private analyzeVariableDeclaration(node: ASTNode): void {
+			this.analyze(node.children[0]);
+	}
 
-  private visit(node: ASTNode): void {
-    switch (node.type) {
-      case ASTNodeType.Program:
-        this.visitProgram(node);
-        break;
-      case ASTNodeType.VariableDeclaration:
-        this.visitVariableDeclaration(node);
-        break;
-      case ASTNodeType.Assignment:
-        this.visitAssignment(node);
-        break;
-      case ASTNodeType.IfStatement:
-        this.visitIfStatement(node);
-        break;
-      case ASTNodeType.IfExpression:
-        this.visitIfExpression(node);
-        break;
-      case ASTNodeType.MatchExpression:
-        this.visitMatchExpression(node);
-        break;
-      case ASTNodeType.ComparisonExpression:
-        this.visitComparisonExpression(node);
-        break;
-      case ASTNodeType.ArithmeticExpression:
-        this.visitArithmeticExpression(node);
-        break;
-      case ASTNodeType.Identifier:
-        this.visitIdentifier(node);
-        break;
-      case ASTNodeType.NumberLiteral:
-        this.visitNumberLiteral(node);
-        break;
-      case ASTNodeType.StringLiteral:
-        this.visitStringLiteral(node);
-        break;
-      case ASTNodeType.Block:
-        this.visitBlock(node);
-        break;
-      case ASTNodeType.ReturnStatement:
-        this.visitReturnStatement(node);
-        break;
-      default:
-        throw new Error(`Unknown AST node type: ${node.type}`);
-    }
-  }
+	private analyzeAssignment(node: ASTNode): void {
+			this.analyze(node.children[0]);
+	}
 
-  private visitProgram(node: ASTNode): void {
-    for (const child of node.children) {
-      this.visit(child);
-    }
-  }
+	private analyzeIfStatement(node: ASTNode): void {
+			this.analyze(node.children[0]); // condition
+			this.analyze(node.children[1]); // consequent
+			if (node.children[2]) {
+					this.analyze(node.children[2]); // alternate
+			}
+	}
 
-  private visitVariableDeclaration(node: ASTNode): void {
-    const identifier = node.value;
-    if (this.scope.has(identifier)) {
-      throw new Error(`Variable '${identifier}' is already declared.`);
-    }
-    this.scope.set(identifier, 'immutable');
-    this.visit(node.children[0]); // Visit the initializer expression
-  }
+	private analyzeIfExpression(node: ASTNode): void {
+			this.analyze(node.children[0]); // condition
+			this.analyze(node.children[1]); // consequent
+			if (node.children[2]) {
+					this.analyze(node.children[2]); // alternate
+			}
+	}
 
-  private visitAssignment(node: ASTNode): void {
-    const identifier = node.value;
-    if (!this.scope.has(identifier)) {
-      throw new Error(`Variable '${identifier}' is not declared.`);
-    }
-    if (this.scope.get(identifier) === 'immutable') {
-      throw new Error(`Cannot reassign to immutable variable '${identifier}'.`);
-    }
-    this.visit(node.children[0]); // Visit the assigned expression
-  }
+	private analyzeMatchExpression(node: ASTNode): void {
+			this.analyze(node.children[0]); // matched expression
+			for (const matchCase of node.children.slice(1)) {
+					this.analyze(matchCase);
+			}
+	}
 
-  private visitIfStatement(node: ASTNode): void {
-    this.visit(node.children[0]); // Visit the condition
-    this.visit(node.children[1]); // Visit the consequent block
-    if (node.children[2]) {
-      this.visit(node.children[2]); // Visit the alternate block if it exists
-    }
-  }
+	private analyzeMatchCase(node: ASTNode): void {
+			this.analyze(node.children[0]); // pattern
+			this.analyze(node.children[1]); // result expression
+	}
 
-  private visitIfExpression(node: ASTNode): void {
-    this.visit(node.children[0]); // Visit the condition
-    this.visit(node.children[1]); // Visit the consequent expression
-    this.visit(node.children[2]); // Visit the alternate expression
-  }
+	private analyzeComparisonExpression(node: ASTNode): void {
+			this.analyze(node.children[0]);
+			this.analyze(node.children[1]);
+	}
 
-  private visitMatchExpression(node: ASTNode): void {
-    this.visit(node.children[0]); // Visit the match expression
-    for (const matchCase of node.children.slice(1)) {
-      this.visit(matchCase); // Visit each case expression
-    }
-  }
+	private analyzeArithmeticExpression(node: ASTNode): void {
+			this.analyze(node.children[0]);
+			this.analyze(node.children[1]);
+	}
 
-  private visitComparisonExpression(node: ASTNode): void {
-    this.visit(node.children[0]); // Visit the left-hand side
-    this.visit(node.children[1]); // Visit the right-hand side
-  }
+	private analyzeIdentifier(node: ASTNode): void {
+			// Identifier analysis logic
+	}
 
-  private visitArithmeticExpression(node: ASTNode): void {
-    this.visit(node.children[0]); // Visit the left-hand side
-    this.visit(node.children[1]); // Visit the right-hand side
-  }
+	private analyzeNumberLiteral(node: ASTNode): void {
+			// Number literal analysis logic
+	}
 
-  private visitIdentifier(node: ASTNode): void {
-    if (!this.scope.has(node.value)) {
-      throw new Error(`Variable '${node.value}' is not declared.`);
-    }
-  }
+	private analyzeStringLiteral(node: ASTNode): void {
+			// String literal analysis logic
+	}
 
-  private visitNumberLiteral(node: ASTNode): void {
-    // Nothing to check for number literals
-  }
+	private analyzeBlock(node: ASTNode): void {
+			for (const child of node.children) {
+					this.analyze(child);
+			}
+	}
 
-  private visitStringLiteral(node: ASTNode): void {
-    // Nothing to check for string literals
-  }
+	private analyzeReturnStatement(node: ASTNode): void {
+			this.analyze(node.children[0]);
+	}
 
-  private visitBlock(node: ASTNode): void {
-    for (const child of node.children) {
-      this.visit(child);
-    }
-  }
+	private analyzeFunctionDeclaration(node: ASTNode): void {
+			this.analyze(node.children[0]); // parameters
+			this.analyze(node.children[1]); // body
+	}
 
-  private visitReturnStatement(node: ASTNode): void {
-    this.visit(node.children[0]); // Visit the return expression
-  }
+	private analyzeLambdaExpression(node: ASTNode): void {
+			this.analyze(node.children[0]);
+	}
+
+	private analyzeParameters(node: ASTNode): void {
+			for (const param of node.children) {
+					this.analyze(param);
+			}
+	}
 }
 
-// Example usage
-const sourceCode = `
-let x = 2;
-let y = match x {
-1 => 10,
-2 => 20,
-_ => 0
-};
-if y > x { return y; }
-`;
