@@ -103,7 +103,7 @@ export class Lexer {
 					return new Token(TokenType.Punctuation, char);
 			}
 
-			throw new Error(`Unexpected character: ${char}`);
+			throw new Error(`Unexpected character: ${char} at position ${this.position} in input: ${this.input} with next char: ${nextChar}`);
 	}
 
 	public tokenize(): Token[] {
