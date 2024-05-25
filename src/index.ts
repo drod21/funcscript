@@ -1,6 +1,7 @@
 import { Lexer } from './lexer';
 import { Parser } from './parser';
 import { SemanticAnalyzer } from './semantic-analyzer';
+
 const sourceCode = `
 let x = 2;
 let y = match x {

@@ -1,5 +1,5 @@
 export enum ASTNodeType {
-  Program,
+	Program,
 	VariableDeclaration,
 	Assignment,
 	IfStatement,

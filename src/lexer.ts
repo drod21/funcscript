@@ -79,7 +79,7 @@ export class Lexer {
 			return new Token(TokenType.String, result);
 	}
 
-	private tokenizeOperatorOrPunctuation(): Token {
+	private tokenizeOperatorOrPunctuation(): Token | null {
 			let char = this.getNextChar();
 			let nextChar = this.peekNextChar();
 
@@ -101,6 +101,11 @@ export class Lexer {
 
 			if (this.punctuations.has(char)) {
 					return new Token(TokenType.Punctuation, char);
+			}
+
+			// Skip over unexpected characters like whitespace
+			if (this.isWhitespace(char)) {
+					return null;
 			}
 
 			throw new Error(`Unexpected character: ${char} at position ${this.position} in input: ${this.input} with next char: ${nextChar}`);
@@ -133,17 +138,14 @@ export class Lexer {
 							continue;
 					}
 
-					if (this.operators.has(char) || this.punctuations.has(char) || (char === '=' && this.peekNextChar() === '>')) {
-							this.getNextChar(); // move the position to include the current char
-							this.tokens.push(this.tokenizeOperatorOrPunctuation());
+					const token = this.tokenizeOperatorOrPunctuation();
+					if (token) {
+							this.tokens.push(token);
 							continue;
 					}
-
-					throw new Error(`Unexpected character: ${char}`);
 			}
 
 			this.tokens.push(new Token(TokenType.EOF, ""));
 			return this.tokens;
 	}
 }
-
