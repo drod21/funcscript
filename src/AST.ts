@@ -1,3 +1,4 @@
+
 export enum ASTNodeType {
 	Program,
 	VariableDeclaration,
@@ -19,9 +20,5 @@ export enum ASTNodeType {
 }
 
 export class ASTNode {
-  constructor(
-    public type: ASTNodeType,
-    public value: any,
-    public children: ASTNode[] = []
-  ) {}
+	constructor(public type: ASTNodeType, public value: any, public children: ASTNode[] = []) {}
 }
