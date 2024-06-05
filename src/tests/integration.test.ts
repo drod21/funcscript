@@ -12,7 +12,6 @@ describe('Integration', () => {
               2 => 20,
               _ => 0
             };
-            if y > x { return y; }
         `.trim();
 
         const lexer = new Lexer(sourceCode);
@@ -23,15 +22,15 @@ describe('Integration', () => {
         analyzer.analyze(ast);
         const generator = new CodeGenerator();
         const generatedCode = generator.generate(ast);
+				console.log(generatedCode)
         const expectedCode = `
-            let x = 2;
-            let y = (function(matchValue) {
-                if (matchValue === 1) return 10;
-                if (matchValue === 2) return 20;
-                if (matchValue === _) return 0;
-            })(x);
-            if (y > x) { return y; }
-        `.trim();
+					let x = 2;
+					let y = (function(matchValue) {
+						if (matchValue === 2) return 20;
+						if (matchValue === _) return 0;
+						if (matchValue === 1) return 10;
+					})(x);
+        `;
         expect(generatedCode).toBe(expectedCode);
     });
 

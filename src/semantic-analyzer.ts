@@ -2,7 +2,7 @@ import { ASTNode, ASTNodeType } from './AST';
 
 export class SemanticAnalyzer {
 	public analyze(node: ASTNode): void {
-			console.log(`Analyzing node: ${JSON.stringify(node)}`);
+			// console.log(`Analyzing node: ${JSON.stringify(node)}`);
 			switch (node.type) {
 					case ASTNodeType.Program:
 							this.analyzeProgram(node);

@@ -68,7 +68,7 @@ export class CodeGenerator {
 
 	private generateMatchExpression(node: ASTNode): string {
 			const expression = this.generate(node.children[0]);
-			const cases = node.children.slice(1).map(matchCase => this.generateMatchCase(matchCase)).join('\n');
+			const cases = node.children.slice(1).map(matchCase => this.generate(matchCase)).join('\n');
 			return `(function(matchValue) {
 					${cases}
 			})(${expression})`;
@@ -77,6 +77,9 @@ export class CodeGenerator {
 	private generateMatchCase(node: ASTNode): string {
 			const pattern = this.generate(node.children[0]);
 			const expression = this.generate(node.children[1]);
+			if (pattern === '_') {
+					return `return ${expression};`;
+			}
 			return `if (matchValue === ${pattern}) return ${expression};`;
 	}
 

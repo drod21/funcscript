@@ -2,6 +2,7 @@ import { CodeGenerator } from './code-generator';
 import { Lexer } from './lexer';
 import { Parser } from './parser';
 import { SemanticAnalyzer } from './semantic-analyzer';
+import { writeFileSync } from 'node:fs';
 
 // Example usage
 const sourceCode = `
@@ -33,7 +34,9 @@ try {
 		const generator = new CodeGenerator();
 		const generatedCode = generator.generate(ast);
 		console.log('Code generation passed')
-		console.log(generatedCode);
+		// write the generated code to a file
+		writeFileSync('output.js', generatedCode);
+		// console.log(generatedCode);
 } catch (error) {
 		console.error(`Code generation failed: ${(error as Error).message}`);
 }
