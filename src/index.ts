@@ -9,10 +9,9 @@ const sourceCode = `
 let x = 2;
 let y = match x {
   1 => 10,
-  2 => 20,
+	2 => 20,
   _ => 0
 };
-if y > x { return y; }
 `.trim();
 
 const lexer = new Lexer(sourceCode);
@@ -23,20 +22,19 @@ const ast = parser.parseProgram();
 
 const analyzer = new SemanticAnalyzer();
 try {
-    analyzer.analyze(ast);
-    console.log('Semantic analysis passed');
-
+  analyzer.analyze(ast);
+  console.log('Semantic analysis passed::');
 } catch (error) {
-    console.error(`Semantic analysis failed: ${(error as Error).message}`);
+  console.error(`Semantic analysis failed: ${(error as Error).message}`);
 }
 
 try {
-		const generator = new CodeGenerator();
-		const generatedCode = generator.generate(ast);
-		console.log('Code generation passed')
-		// write the generated code to a file
-		writeFileSync('output.js', generatedCode);
-		// console.log(generatedCode);
+  const generator = new CodeGenerator();
+  const generatedCode = generator.generate(ast);
+  console.log('Code generation passed');
+  // write the generated code to a file
+  writeFileSync('output.js', generatedCode);
+  // console.log(generatedCode);
 } catch (error) {
-		console.error(`Code generation failed: ${(error as Error).message}`);
+  console.error(`Code generation failed: ${(error as Error).message}`);
 }
