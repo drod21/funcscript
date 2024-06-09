@@ -8,6 +8,7 @@ export enum ASTNodeType {
   MatchCase,
   ComparisonExpression,
   ArithmeticExpression,
+  LogicalExpression,
   Identifier,
   NumberLiteral,
   StringLiteral,
@@ -24,4 +25,12 @@ export class ASTNode {
     public value: any,
     public children: ASTNode[] = []
   ) {}
+}
+
+// Add node types for logical operations
+export interface LogicalExpressionNode extends ASTNode {
+  type: ASTNodeType.LogicalExpression;
+  operator: string;
+  left: ASTNode;
+  right: ASTNode;
 }

@@ -25,12 +25,12 @@ describe('Integration', () => {
     console.log(generatedCode);
     const expectedCode = `
 					let x = 2;
-					let y = (function(matchValue) {
-						if (matchValue === 2) return 20;
-						if (matchValue === _) return 0;
-						if (matchValue === 1) return 10;
+					let y = (function(value) {
+						if (value === 1) return 10;
+						if (value === 2) return 20;
+						return 0;
 					})(x);
-        `;
+        `.trim();
     expect(generatedCode).toBe(expectedCode);
   });
 
