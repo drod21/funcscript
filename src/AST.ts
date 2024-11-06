@@ -1,3 +1,5 @@
+import { Token } from './lexer';
+
 export enum ASTNodeType {
   Program,
   VariableDeclaration,
@@ -17,6 +19,7 @@ export enum ASTNodeType {
   FunctionDeclaration,
   LambdaExpression,
   Parameters,
+  BinaryOperation,
 }
 
 export class ASTNode {
@@ -33,4 +36,14 @@ export interface LogicalExpressionNode extends ASTNode {
   operator: string;
   left: ASTNode;
   right: ASTNode;
+}
+
+export class BinaryOperationNode extends ASTNode {
+  constructor(
+    public left: ASTNode,
+    public operator: Token,
+    public right: ASTNode
+  ) {
+    super(ASTNodeType.BinaryOperation, operator.value, [left, right]);
+  }
 }

@@ -12,7 +12,11 @@ let y = match x {
 	2 => 20,
   _ => 0
 };
+if x && y {
+	let z = x + y;
+}
 `.trim();
+console.log('sourceCode', sourceCode);
 
 const lexer = new Lexer(sourceCode);
 const tokens = lexer.tokenize();
@@ -31,7 +35,7 @@ try {
 try {
   const generator = new CodeGenerator();
   const generatedCode = generator.generate(ast);
-  console.log('Code generation passed');
+  console.log('Code generation passed', generatedCode);
   // write the generated code to a file
   writeFileSync('output.js', generatedCode);
   // console.log(generatedCode);

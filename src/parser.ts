@@ -1,4 +1,4 @@
-import { ASTNode, ASTNodeType } from './AST';
+import { ASTNode, ASTNodeType, BinaryOperationNode } from './AST';
 import { Token, TokenType } from './lexer';
 
 export class Parser {
@@ -165,36 +165,19 @@ export class Parser {
   }
 
   private parseExpression(): ASTNode {
-    if (this.currentToken().type === TokenType.Lambda) {
-      return this.parseLambdaExpression();
-    }
-    return this.parseIfExpression();
-  }
+    let left = this.parseComparisonExpression();
 
-  private parseIfExpression(): ASTNode {
-    if (
-      this.currentToken().type === TokenType.Keyword &&
-      this.currentToken().value === 'if'
+    while (
+      this.currentToken().type === TokenType.AND ||
+      this.currentToken().type === TokenType.OR
     ) {
-      this.expectToken(TokenType.Keyword, 'if'); // 'if'
-      const condition = this.parseExpression();
-      this.expectToken(TokenType.Keyword, 'then'); // 'then'
-      const consequent = this.parseExpression();
-      let alternate = null;
-      if (
-        this.currentToken().type === TokenType.Keyword &&
-        this.currentToken().value === 'else'
-      ) {
-        this.expectToken(TokenType.Keyword, 'else'); // 'else'
-        alternate = this.parseExpression();
-      }
-      return new ASTNode(
-        ASTNodeType.IfExpression,
-        null,
-        alternate ? [condition, consequent, alternate] : [condition, consequent]
-      );
+      const operator = this.currentToken();
+      this.nextToken();
+      const right = this.parseComparisonExpression();
+      left = new BinaryOperationNode(left, operator, right);
     }
-    return this.parseComparisonExpression();
+
+    return left;
   }
 
   private parseComparisonExpression(): ASTNode {
@@ -224,12 +207,10 @@ export class Parser {
       this.currentToken().type === TokenType.Operator &&
       (this.currentToken().value === '+' || this.currentToken().value === '-')
     ) {
-      const operator = this.nextToken();
+      const operator = this.currentToken();
+      this.nextToken();
       const right = this.parseTerm();
-      node = new ASTNode(ASTNodeType.ArithmeticExpression, operator.value, [
-        node,
-        right,
-      ]);
+      node = new BinaryOperationNode(node, operator, right);
     }
     return node;
   }
@@ -240,12 +221,10 @@ export class Parser {
       this.currentToken().type === TokenType.Operator &&
       (this.currentToken().value === '*' || this.currentToken().value === '/')
     ) {
-      const operator = this.nextToken();
+      const operator = this.currentToken();
+      this.nextToken();
       const right = this.parseFactor();
-      node = new ASTNode(ASTNodeType.ArithmeticExpression, operator.value, [
-        node,
-        right,
-      ]);
+      node = new BinaryOperationNode(node, operator, right);
     }
     return node;
   }

@@ -1,19 +1,12 @@
 {
-  "extends": "@tsconfig/node20/tsconfig.json",
   "compilerOptions": {
-    "strict": true, // Enable all strict type-checking options
-    "esModuleInterop": true, // Enables emit interoperability between CommonJS and ES Modules
-    "forceConsistentCasingInFileNames": true, // Disallow inconsistently-cased references to the same file
-    "skipLibCheck": true, // Skip type checking of declaration files
-    "outDir": "./dist", // Redirect output structure to the directory
-    "rootDir": "./src", // Specify the root directory of input files
-    "sourceMap": true // Generates corresponding .map file
+    "target": "ES2020",
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "strict": true,
+    "outDir": "./dist",
+    "declaration": true
   },
-  "include": [
-    "src/**/*.ts" // Include all TypeScript files in the src directory
-  ],
-  "exclude": [
-    "node_modules", // Exclude node_modules directory
-    "dist" // Exclude output directory
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
 }

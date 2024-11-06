@@ -12,8 +12,7 @@ describe('Integration', () => {
               2 => 20,
               _ => 0
             };
-        `.trim();
-
+`.trim();
     const lexer = new Lexer(sourceCode);
     const tokens = lexer.tokenize();
     const parser = new Parser(tokens);

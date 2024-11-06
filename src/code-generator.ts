@@ -1,4 +1,10 @@
-import { ASTNode, ASTNodeType, LogicalExpressionNode } from './AST';
+import {
+  ASTNode,
+  ASTNodeType,
+  LogicalExpressionNode,
+  BinaryOperationNode,
+} from './AST';
+import { Token, TokenType } from './lexer';
 
 export class CodeGenerator {
   public generate(node: ASTNode): string {
@@ -33,6 +39,8 @@ export class CodeGenerator {
         return this.generateBlock(node);
       case ASTNodeType.ReturnStatement:
         return this.generateReturnStatement(node);
+      case ASTNodeType.BinaryOperation:
+        return this.visitBinaryOperationNode(node as BinaryOperationNode);
       default:
         throw new Error(`Unknown AST node type: ${node.type}`);
     }
@@ -72,8 +80,8 @@ export class CodeGenerator {
     const value = node.value;
     const cases = node.children.map((child) => this.generate(child)).join('\n');
     return `(function(value) {
-			${cases}
-		})(${value})`;
+      ${cases}
+    })(${value})`;
   }
 
   private generateMatchCase(node: ASTNode): string {
@@ -92,6 +100,9 @@ export class CodeGenerator {
   }
 
   private generateArithmeticExpression(node: ASTNode): string {
+    if (node instanceof BinaryOperationNode) {
+      return this.visitBinaryOperationNode(node);
+    }
     const left = this.generate(node.children[0]);
     const right = this.generate(node.children[1]);
     return `${left} ${node.value} ${right}`;
@@ -118,12 +129,28 @@ export class CodeGenerator {
   private generateBlock(node: ASTNode): string {
     const statements = node.children
       .map((child) => this.generate(child))
-      .join('\n');
-    return `{ ${statements} }`;
+      .join('\n  ');
+    return `{\n  ${statements}\n}`;
   }
 
   private generateReturnStatement(node: ASTNode): string {
     const expression = this.generate(node.children[0]);
     return `return ${expression};`;
+  }
+
+  private visitBinaryOperationNode(node: BinaryOperationNode): string {
+    const left = this.generate(node.left);
+    const right = this.generate(node.right);
+
+    switch (node.operator.type) {
+      case TokenType.AND:
+        return `(${left} && ${right})`;
+      case TokenType.OR:
+        return `(${left} || ${right})`;
+      case TokenType.Operator:
+        return `(${left} ${node.operator.value} ${right})`;
+      default:
+        return `(${left} ${node.operator.value} ${right})`;
+    }
   }
 }

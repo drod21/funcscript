@@ -9,6 +9,8 @@ export enum TokenType {
   Whitespace,
   Comment,
   EOF,
+  AND,
+  OR,
 }
 
 export class Token {
@@ -44,10 +46,18 @@ export class Lexer {
     '>',
     '<=',
     '>=',
+    '&&',
+    '||',
   ]);
   private punctuations = new Set(['{', '}', '(', ')', ';', ',']);
 
   constructor(input: string) {
+    this.input = input;
+    this.position = 0;
+    this.tokens = [];
+  }
+
+  public setInput(input: string): void {
     this.input = input;
     this.position = 0;
     this.tokens = [];
@@ -105,14 +115,28 @@ export class Lexer {
     return new Token(TokenType.String, result);
   }
 
+  private advance(): void {
+    this.position++;
+  }
+
   private tokenizeOperatorOrPunctuation(): Token | null {
-    let char = this.getNextChar();
+    const char = this.getNextChar();
     const nextChar = this.peekNextChar();
+
+    if (char === '&' && nextChar === '&') {
+      this.advance(); // consume second &
+      return new Token(TokenType.AND, '&&');
+    }
+
+    if (char === '|' && nextChar === '|') {
+      this.advance(); // consume second |
+      return new Token(TokenType.OR, '||');
+    }
 
     // Handle lambda operator
     if (char === '=' && nextChar === '>') {
-      char += this.getNextChar(); // get the second character
-      return new Token(TokenType.Lambda, char);
+      this.getNextChar(); // get the second character
+      return new Token(TokenType.Lambda, '=>');
     }
 
     // Handle multi-character operators
@@ -120,8 +144,8 @@ export class Lexer {
       (char === '=' || char === '!' || char === '<' || char === '>') &&
       nextChar === '='
     ) {
-      char += this.getNextChar(); // get the second character
-      return new Token(TokenType.Operator, char);
+      this.getNextChar(); // get the second character
+      return new Token(TokenType.Operator, char + '=');
     }
 
     if (this.operators.has(char)) {
@@ -143,6 +167,9 @@ export class Lexer {
   }
 
   public tokenize(): Token[] {
+    this.tokens = [];
+    this.position = 0;
+
     while (this.position < this.input.length) {
       const char = this.peekNextChar();
 
